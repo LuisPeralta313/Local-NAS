@@ -1,0 +1,25 @@
+# caddy — reverse proxy / puerta pública.
+# Es lo único que abro a internet cuando necesito que alguien externo vea la web app.
+# Recibe en el puerto 80 (y 443 si hay dominio con HTTPS) y redirige al contenedor
+# de la app. El resto de servicios quedan solo en la red privada.
+
+name: caddy
+
+services:
+  caddy:
+    image: caddy:2-alpine
+    container_name: caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile    # reglas de enrutado
+      - ./data:/data                        # certificados/estado (autogenerado)
+      - ./config:/config
+    networks:
+      - caddy-net
+
+networks:
+  caddy-net:
+    driver: bridge

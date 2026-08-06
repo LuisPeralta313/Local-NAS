@@ -1,0 +1,42 @@
+# data-projects — mi workspace de análisis y ML.
+# Jupyter Lab para trabajar en notebooks, y un PostgreSQL al lado para practicar
+# flujos reales de datos (ingesta -> limpieza -> análisis). Ambos comparten la red
+# "data-net" para que los notebooks puedan hablarle a la base por su nombre.
+# Los datasets pesados NO se versionan (ver .gitignore): se descargan cuando trabajo
+# y se limpian al terminar.
+
+name: data-projects
+
+services:
+  jupyter:
+    image: jupyter/datascience-notebook:latest
+    container_name: data-projects-jupyter
+    restart: unless-stopped
+    ports:
+      - "8888:8888"                         # UI de Jupyter Lab
+    environment:
+      JUPYTER_ENABLE_LAB: "yes"
+    volumes:
+      - ./notebooks:/home/jovyan/work/notebooks   # mis notebooks (sí se versionan)
+      - ./datasets:/home/jovyan/work/datasets      # datos pesados (NO se versionan)
+      - ./scripts:/home/jovyan/work/scripts        # scripts reutilizables
+    command: jupyter lab --ip=0.0.0.0 --allow-root --no-browser
+    networks:
+      - data-net
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: data-projects-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
+    networks:
+      - data-net
+
+networks:
+  data-net:
+    driver: bridge

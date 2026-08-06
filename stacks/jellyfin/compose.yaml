@@ -1,0 +1,24 @@
+# jellyfin — media server.
+# Sirve video y archivos multimedia. La carpeta ./media se monta en solo-lectura
+# (:ro) para que Jellyfin nunca pueda borrar mis archivos. Config y cache se generan
+# solos y persisten en carpetas locales.
+
+name: jellyfin
+
+services:
+  jellyfin:
+    image: jellyfin/jellyfin:latest
+    container_name: jellyfin
+    restart: unless-stopped
+    ports:
+      - "8096:8096"                         # UI web de Jellyfin
+    volumes:
+      - ./config:/config                    # configuración (autogenerada)
+      - ./cache:/cache                      # caché (autogenerada)
+      - ./media:/media:ro                   # mis medios, en solo-lectura
+    networks:
+      - jellyfin-net
+
+networks:
+  jellyfin-net:
+    driver: bridge

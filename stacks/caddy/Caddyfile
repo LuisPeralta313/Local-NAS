@@ -1,0 +1,10 @@
+# Enrutado de Caddy.
+# Escucha en el puerto 80 y reenvía todo al contenedor de la app en su puerto interno.
+# NOTA: para que Caddy "vea" a la app, ambos deben compartir una red Docker
+# (o usar host.docker.internal). Si tienen redes separadas, no se encuentran.
+#
+# Con dominio propio, reemplazar ":80" por "midominio.com" y Caddy gestiona HTTPS solo.
+
+:80 {
+    reverse_proxy peredent-app:5000
+}

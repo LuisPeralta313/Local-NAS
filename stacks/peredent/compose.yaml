@@ -1,0 +1,48 @@
+# peredent — web app + base de datos.
+# La app (FastAPI) se conecta a la base de datos por el nombre de servicio "db",
+# que Docker resuelve como DNS interno. La app no arranca hasta que la DB está sana.
+# Todo vive en la red "peredent-net" y persiste en volúmenes locales.
+# --> Si copias esta estructura: mete tu propio código en ./src y ajusta el puerto.
+
+name: peredent
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: peredent-db
+    restart: unless-stopped                 # vuelve solo tras reinicio/caída
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}        # viene de .env (no se sube a Git)
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data   # datos persistentes de la DB
+    networks:
+      - peredent-net
+    healthcheck:                            # la app espera a que esto esté "healthy"
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build:
+      context: ./src                        # construye la imagen desde mi código
+      dockerfile: Dockerfile
+    container_name: peredent-app
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: ${DATABASE_URL}         # cómo la app encuentra la DB
+    ports:
+      - "5000:5000"                         # puerto que Caddy usará para exponerla
+    depends_on:
+      db:
+        condition: service_healthy          # no arranca sin DB lista
+    volumes:
+      - ./src:/app                          # monta el código (útil en desarrollo)
+    networks:
+      - peredent-net
+
+networks:
+  peredent-net:
+    driver: bridge
