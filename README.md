@@ -1,7 +1,10 @@
 # Estigia — Homelab Self-Hosted
 
+**Versión:** v1.1.0 · Ver [CHANGELOG.md](./CHANGELOG.md)
+
 > Servidor casero sobre una laptop Dell reutilizada (i5-7300HQ, 16 GB RAM, 1 TB HDD, GTX 1050).
-> Corre Ubuntu Server 26.04 LTS headless, con acceso remoto por Tailscale y servicios en Docker. ( Considero las posibles vulnerabilidades de la versión y las manejo de la mejor forma al no exponerme ) 
+> Corre Ubuntu Server 26.04 LTS headless, con acceso remoto por Tailscale y servicios en Docker.
+> (Considero las posibles vulnerabilidades de la versión y las manejo de la mejor forma al no exponerme.)
 > Todo es IaC: cada servicio vive en su propia carpeta con su `compose.yaml`, se levanta y se baja
 > de forma independiente, y vuelve solo tras un reinicio.
 
@@ -27,7 +30,8 @@
             │      ├── data-projects/(Jupyter + PostgreSQL)
             │      ├── jellyfin/     (media server)
             │      ├── caddy/        (reverse proxy → expone la web)
-            │      └── minecraft/    (game server)
+            │      ├── minecraft/    (game server)
+            │      └── monitoring/   (Grafana + Prometheus: métricas del host y contenedores)
             └────────────────────────────┘
 ```
 
@@ -64,6 +68,7 @@ contenedores, aislado, reproducible y desechable. Si un servicio explota, no toc
 | Media | Jellyfin | Servir video/archivos multimedia |
 | Reverse proxy | Caddy | Exponer la web app públicamente |
 | Game server | itzg/minecraft-server | Servidor de Minecraft Java |
+| Observabilidad | Grafana + Prometheus + node-exporter + cAdvisor | Métricas y dashboards del host y contenedores |
 
 ---
 
@@ -90,8 +95,14 @@ contenedores, aislado, reproducible y desechable. Si un servicio explota, no toc
 │   ├── compose.yaml
 │   └── Caddyfile
 │
-└── minecraft/           # Game server
-    └── compose.yaml
+├── minecraft/           # Game server
+│   └── compose.yaml
+│
+└── monitoring/          # Grafana + Prometheus + exporters (métricas y dashboards)
+    ├── compose.yaml
+    ├── README.md
+    └── prometheus/
+        └── prometheus.yml
 ```
 
 ---
@@ -124,6 +135,12 @@ Cada carpeta tiene su propio ciclo de vida. No hace falta levantar todo a la vez
   y pon valores reales (el `.env` nunca se sube a Git).
 - El firmware/host es específico: kernel reciente para soportar el WiFi integrado y el dongle USB.
 - Este repo documenta *estructura y decisiones*, no incluye datos ni secretos.
+
+---
+
+## Capturas
+
+Ver [`docs/images/`](./docs/images/) para el estado visual del homelab (dashboards, servicios corriendo).
 
 ---
 
